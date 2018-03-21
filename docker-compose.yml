@@ -1,0 +1,41 @@
+version: '3'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3.7.4-management
+    networks:
+      - fakenet
+    ports:
+      - "15672"
+    volumes:
+      - rabbit-data:/var/lib/rabbitmq
+
+  fakecoin-server:
+    image: tomverelst/fakecoin-server
+    networks:
+      - fakenet
+    ports:
+      - "8080"
+    environment:
+      - SPRING_RABBIT_HOST=rabbitmq
+    depends_on:
+      - rabbitmq
+
+  fakecoin-ui:
+    image: tomverelst/fakecoin-ui
+    networks:
+         - fakenet
+    environment:
+      - RABBIT_URL=amqp://rabbitmq
+      - FAKECOIN_HOST=fakecoin-server
+    ports:
+      - "3000"
+    depends_on:
+      - fakecoin-server
+      - rabbitmq
+
+volumes:
+  rabbit-data:
+
+networks:
+  fakenet:
